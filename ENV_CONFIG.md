@@ -26,7 +26,7 @@
 
 ### OpenAI API
 - `OPENAI_API_KEY`: OpenAI的API密钥
-- `OPENAI_MODEL`: 可选，模型名称，例如 "gpt-3.5-turbo"、"gpt-4"、"gpt-4-turbo"、"gpt-4-vision-preview" 等，默认为 "gpt-3.5-turbo"
+- `OPENAI_MODEL`: 可选，模型名称，例如 "gpt-3.5-turbo"（推荐，默认选项）、"gpt-3.5-turbo-16k"、"gpt-4"（需特殊访问权限）、"gpt-4-turbo"（需特殊访问权限）
 
 ### HuggingFace API
 - `HUGGINGFACE_API_KEY`: HuggingFace的API Token

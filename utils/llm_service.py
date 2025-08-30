@@ -10,7 +10,7 @@ from functools import lru_cache
 
 # API配置，从环境变量读取以保证安全性
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")  # 确保默认使用所有用户都有权限的模型
 AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_DEPLOYMENT_NAME = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", "")
@@ -120,13 +120,19 @@ class LLMService:
             print(f"OpenAI API不可用，API密钥未配置")
             return None
             
+        # 确保使用的模型是可访问的
+        model = OPENAI_MODEL
+        if model not in ["gpt-3.5-turbo", "gpt-3.5-turbo-16k"]:
+            print(f"警告: 配置的模型 {model} 可能需要特殊访问权限，如果无法访问将回退到 gpt-3.5-turbo")
+            model = "gpt-3.5-turbo"  # 回退到最常用的模型
+            
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
         
         payload = {
-            "model": OPENAI_MODEL,
+            "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
             "temperature": temperature
@@ -135,7 +141,7 @@ class LLMService:
         api_url = "https://api.openai.com/v1/chat/completions"
         
         try:
-            print(f"尝试调用OpenAI API，使用模型: {OPENAI_MODEL}")
+            print(f"尝试调用OpenAI API，使用模型: {model}")
             response = requests.post(api_url, headers=headers, json=payload, timeout=30)  # 增加超时时间
             if response.status_code == 200:
                 data = response.json()
