@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心情诗意生成器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-radius: 2rem;
+            background: rgba(255,255,255,0.85);
+            padding: 2rem 2.5rem;
+            max-width: 480px;
+            width: 100%;
+        }
+        .brand {
+            font-family: 'STKaiti', KaiTi, serif;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #d35400;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .poem {
+            font-family: 'STKaiti', KaiTi, serif;
+            font-size: 1.3rem;
+            color: #34495e;
+            margin-top: 1.5rem;
+            white-space: pre-line;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #f6d365 0%, #fda085 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #fda085 0%, #f6d365 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand">心情诗意生成器</div>
+        <form method="post">
+            <div class="mb-3">
+                <label for="mood" class="form-label">请输入你现在的心情：</label>
+                <input type="text" class="form-control" id="mood" name="mood" placeholder="如：孤独、喜悦、迷茫..." required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">生成诗意文字</button>
+        </form>
+        {% if poem %}
+        <div class="poem mt-4">
+            <strong>大诗人为你写道：</strong><br>
+            {{ poem }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
