@@ -10,10 +10,12 @@ from functools import lru_cache
 
 # API配置，从环境变量读取以保证安全性
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-3.5-turbo")
 AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_DEPLOYMENT_NAME = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", "")
 HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY", "")
+HUGGINGFACE_MODEL = os.environ.get("HUGGINGFACE_MODEL", "THUDM/chatglm3-6b")
 
 # 备用诗句库，当所有API都不可用时使用
 BACKUP_POEMS = {
@@ -111,7 +113,7 @@ class LLMService:
         }
         
         payload = {
-            "model": "gpt-3.5-turbo",
+            "model": OPENAI_MODEL,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
             "temperature": temperature
@@ -138,8 +140,8 @@ class LLMService:
             "Authorization": f"Bearer {HUGGINGFACE_API_KEY}"
         }
         
-        # 此处使用ChatGLM3作为示例模型，可根据需要替换
-        api_url = "https://api-inference.huggingface.co/models/THUDM/chatglm3-6b"
+        # 使用环境变量中配置的模型
+        api_url = f"https://api-inference.huggingface.co/models/{HUGGINGFACE_MODEL}"
         
         payload = {
             "inputs": prompt,

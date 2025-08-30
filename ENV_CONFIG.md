@@ -22,12 +22,14 @@
 ### Azure OpenAI API（推荐）
 - `AZURE_OPENAI_API_KEY`: Azure OpenAI的API密钥
 - `AZURE_OPENAI_ENDPOINT`: Azure OpenAI的端点URL，例如 "https://your-resource.openai.azure.com"
-- `AZURE_OPENAI_DEPLOYMENT_NAME`: 部署的模型名称，例如 "gpt-35-turbo"
+- `AZURE_OPENAI_DEPLOYMENT_NAME`: 部署的模型名称，例如 "gpt-35-turbo"、"gpt-4"、"gpt-4-turbo"、"gpt-4-vision"、"text-embedding-ada-002" 等
 
 ### OpenAI API
 - `OPENAI_API_KEY`: OpenAI的API密钥
+- `OPENAI_MODEL`: 可选，模型名称，例如 "gpt-3.5-turbo"、"gpt-4"、"gpt-4-turbo"、"gpt-4-vision-preview" 等，默认为 "gpt-3.5-turbo"
 
 ### HuggingFace API
 - `HUGGINGFACE_API_KEY`: HuggingFace的API Token
+- `HUGGINGFACE_MODEL`: 可选，模型ID，例如 "THUDM/chatglm3-6b"、"meta-llama/Llama-2-7b-chat-hf"、"mistralai/Mistral-7B-Instruct-v0.2" 等，默认为 "THUDM/chatglm3-6b"
 
 注意：如果没有配置任何API密钥，应用会使用内置的备用诗句，仍然能正常运行。
