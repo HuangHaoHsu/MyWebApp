@@ -34,14 +34,3 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    poem = None
-    if request.method == 'POST':
-        mood = request.form.get('mood', '')
-        poem = generate_poem(mood)
-    return render_template('index.html', poem=poem)
-
-if __name__ == '__main__':
-    app.run(debug=True)
