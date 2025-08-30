@@ -60,16 +60,28 @@ class LLMService:
         self.api_type = api_type
         self.available_apis = self._check_available_apis()
     
-    @lru_cache(maxsize=1)
     def _check_available_apis(self):
         """检查哪些API可用"""
         available = []
         if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT:
             available.append("azure_openai")
+            print(f"Azure OpenAI API 可用")
+        else:
+            print(f"Azure OpenAI API 不可用: API密钥或端点未配置")
+            
         if OPENAI_API_KEY:
             available.append("openai")
+            print(f"OpenAI API 可用, 模型: {OPENAI_MODEL}")
+        else:
+            print(f"OpenAI API 不可用: API密钥未配置")
+            
         if HUGGINGFACE_API_KEY:
             available.append("huggingface")
+            print(f"HuggingFace API 可用, 模型: {HUGGINGFACE_MODEL}")
+        else:
+            print(f"HuggingFace API 不可用: API密钥未配置")
+            
+        print(f"可用的API: {available}")
         return available
     
     def call_azure_openai(self, prompt, max_tokens=150, temperature=0.7):
@@ -105,6 +117,7 @@ class LLMService:
     def call_openai(self, prompt, max_tokens=150, temperature=0.7):
         """调用OpenAI API"""
         if "openai" not in self.available_apis:
+            print(f"OpenAI API不可用，API密钥未配置")
             return None
             
         headers = {
@@ -122,10 +135,13 @@ class LLMService:
         api_url = "https://api.openai.com/v1/chat/completions"
         
         try:
-            response = requests.post(api_url, headers=headers, json=payload, timeout=10)
+            print(f"尝试调用OpenAI API，使用模型: {OPENAI_MODEL}")
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)  # 增加超时时间
             if response.status_code == 200:
                 data = response.json()
                 return data["choices"][0]["message"]["content"]
+            else:
+                print(f"OpenAI API调用失败，状态码: {response.status_code}, 响应: {response.text}")
             return None
         except Exception as e:
             print(f"OpenAI API调用失败: {str(e)}")
@@ -181,23 +197,40 @@ class LLMService:
         
         prompt = f"请你扮演中国古代诗人{poet}，针对一个人现在的心情是「{mood}」，写一段富有诗意的文字，字数100字左右，要有古典韵味和哲理性。不要解释，直接输出诗意文字。"
         
+        print(f"生成诗意文字: 心情 '{mood}', 诗人 '{poet}'")
+        
         # 按优先级尝试不同的API
+        response = None
+        
         if self.api_type == "azure_openai" or not self.api_type:
+            print("尝试使用 Azure OpenAI API...")
             response = self.call_azure_openai(prompt)
             if response:
+                print("Azure OpenAI API 调用成功")
                 return f"【{poet}】\n\n{response}"
+            else:
+                print("Azure OpenAI API 调用失败")
             
-        if self.api_type == "openai" or not response:
+        if self.api_type == "openai" or (not response and "openai" in self.available_apis):
+            print("尝试使用 OpenAI API...")
             response = self.call_openai(prompt)
             if response:
+                print("OpenAI API 调用成功")
                 return f"【{poet}】\n\n{response}"
+            else:
+                print("OpenAI API 调用失败")
             
-        if self.api_type == "huggingface" or not response:
+        if self.api_type == "huggingface" or (not response and "huggingface" in self.available_apis):
+            print("尝试使用 HuggingFace API...")
             response = self.call_huggingface(prompt)
             if response:
+                print("HuggingFace API 调用成功")
                 return f"【{poet}】\n\n{response}"
+            else:
+                print("HuggingFace API 调用失败")
         
         # 所有API都失败，使用备用响应
+        print("所有API调用失败，使用备用诗句")
         backup = self.get_backup_response(poet, mood)
         return f"【{poet}】\n\n{backup}"
 
