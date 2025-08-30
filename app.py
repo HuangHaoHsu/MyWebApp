@@ -1,15 +1,13 @@
 from flask import Flask, render_template, request
 import random
 import os
+from dotenv import load_dotenv
 from utils.llm_service import get_poem_for_mood
 
-app = Flask(__name__)
+# 加载环境变量，从.env文件
+load_dotenv()
 
-# 设置环境变量（实际应使用.env文件或环境变量设置）
-# os.environ["OPENAI_API_KEY"] = "your-openai-api-key" 
-# os.environ["AZURE_OPENAI_API_KEY"] = "your-azure-openai-api-key"
-# os.environ["AZURE_OPENAI_ENDPOINT"] = "https://your-resource-name.openai.azure.com"
-# os.environ["HUGGINGFACE_API_KEY"] = "your-huggingface-api-key"
+app = Flask(__name__)
 
 def generate_poem(mood, poet="李白"):
     """生成诗意文字，会尝试使用已配置的API，如未配置则使用备用诗句"""
