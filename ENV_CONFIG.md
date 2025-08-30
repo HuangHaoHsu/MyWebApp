@@ -32,4 +32,8 @@
 - `HUGGINGFACE_API_KEY`: HuggingFace的API Token
 - `HUGGINGFACE_MODEL`: 可选，模型ID，例如 "THUDM/chatglm3-6b"、"meta-llama/Llama-2-7b-chat-hf"、"mistralai/Mistral-7B-Instruct-v0.2" 等，默认为 "THUDM/chatglm3-6b"
 
+### Replicate API (推荐免费选项)
+- `REPLICATE_API_TOKEN`: Replicate的API令牌，注册后可获得免费额度
+- `REPLICATE_MODEL`: 可选，模型ID，例如 "meta/llama-2-7b-chat"、"mistralai/mistral-7b-instruct"
+
 注意：如果没有配置任何API密钥，应用会使用内置的备用诗句，仍然能正常运行。

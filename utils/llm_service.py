@@ -16,6 +16,8 @@ AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
 AZURE_OPENAI_DEPLOYMENT_NAME = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", "")
 HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY", "")
 HUGGINGFACE_MODEL = os.environ.get("HUGGINGFACE_MODEL", "THUDM/chatglm3-6b")
+REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN", "")
+REPLICATE_MODEL = os.environ.get("REPLICATE_MODEL", "meta/llama-2-7b-chat:13c3cdee13ee059ab779f0291d29054dab00a47dad8261375654de5540165fb0")
 
 # 备用诗句库，当所有API都不可用时使用
 BACKUP_POEMS = {
@@ -80,6 +82,12 @@ class LLMService:
             print(f"HuggingFace API 可用, 模型: {HUGGINGFACE_MODEL}")
         else:
             print(f"HuggingFace API 不可用: API密钥未配置")
+            
+        if REPLICATE_API_TOKEN:
+            available.append("replicate")
+            print(f"Replicate API 可用, 模型: {REPLICATE_MODEL}")
+        else:
+            print(f"Replicate API 不可用: API Token未配置")
             
         print(f"可用的API: {available}")
         return available
@@ -153,6 +161,66 @@ class LLMService:
             print(f"OpenAI API调用失败: {str(e)}")
             return None
     
+    def call_replicate(self, prompt, max_tokens=512, temperature=0.7):
+        """调用Replicate API"""
+        if "replicate" not in self.available_apis:
+            return None
+            
+        headers = {
+            "Authorization": f"Token {REPLICATE_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        # 构建Replicate API请求
+        api_url = "https://api.replicate.com/v1/predictions"
+        
+        payload = {
+            "version": REPLICATE_MODEL,
+            "input": {
+                "prompt": prompt,
+                "max_length": max_tokens,
+                "temperature": temperature,
+                "top_p": 0.9
+            }
+        }
+        
+        try:
+            print(f"尝试调用Replicate API，使用模型: {REPLICATE_MODEL}")
+            
+            # 创建预测任务
+            response = requests.post(api_url, headers=headers, json=payload)
+            if response.status_code != 201:
+                print(f"Replicate API调用失败，状态码: {response.status_code}, 响应: {response.text}")
+                return None
+                
+            prediction = response.json()
+            prediction_id = prediction["id"]
+            
+            # 获取预测结果
+            while True:
+                response = requests.get(
+                    f"https://api.replicate.com/v1/predictions/{prediction_id}",
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    print(f"获取Replicate预测结果失败: {response.text}")
+                    return None
+                    
+                prediction = response.json()
+                if prediction["status"] == "succeeded":
+                    return "".join(prediction["output"])
+                elif prediction["status"] == "failed":
+                    print(f"Replicate预测失败: {prediction.get('error', '')}")
+                    return None
+                    
+                import time
+                time.sleep(1)  # 等待1秒后再次检查
+                
+        except Exception as e:
+            print(f"Replicate API调用失败: {str(e)}")
+            return None
+    
     def call_huggingface(self, prompt, max_tokens=150, temperature=0.7):
         """调用HuggingFace API"""
         if "huggingface" not in self.available_apis:
@@ -193,7 +261,8 @@ class LLMService:
         
         poem_template = random.choice(BACKUP_POEMS[poet])
         return poem_template.format(mood=mood)
-    
+
+
     def generate_poem(self, mood, poet="李白"):
         """生成诗意文字"""
         # 构建提示词
@@ -226,6 +295,15 @@ class LLMService:
             else:
                 print("OpenAI API 调用失败")
             
+        if self.api_type == "replicate" or (not response and "replicate" in self.available_apis):
+            print("尝试使用 Replicate API...")
+            response = self.call_replicate(prompt)
+            if response:
+                print("Replicate API 调用成功")
+                return f"【{poet}】\n\n{response}"
+            else:
+                print("Replicate API 调用失败")
+            
         if self.api_type == "huggingface" or (not response and "huggingface" in self.available_apis):
             print("尝试使用 HuggingFace API...")
             response = self.call_huggingface(prompt)
@@ -242,7 +320,7 @@ class LLMService:
 
 
 # 使用示例
-def get_poem_for_mood(mood, poet="李白", api_type="azure_openai"):
+def get_poem_for_mood(mood, poet="李白", api_type=""):
     """获取与心情相关的诗意文字的便捷函数"""
     llm = LLMService(api_type=api_type)
     return llm.generate_poem(mood, poet)
